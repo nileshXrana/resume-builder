@@ -1,0 +1,57 @@
+.createButton {
+  background-color: #1a73e8 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  border-radius: 20px !important;
+  padding: 8px 20px !important;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.createButton:hover {
+  background-color: #1557b0 !important;
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15) !important;
+}
+
+.templateContainer {
+  height: 16rem;
+  padding: 20px;
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.dialogTitle {
+  font-size: 1.5rem !important;
+  text-align: center;
+}
+
+.templateCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 15rem;
+  height: 100%;
+  transition: transform 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.templateCard:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.serialContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 100px;
+  gap: 10px;
+  margin-top: 20px;
+}
