@@ -21,6 +21,21 @@ export default function Home() {
   //   fetchSession();
   // }, []);
 
+  useEffect(() => {
+    // get session from next-auth
+    const fetchSession = async () => {
+      const res = await fetch("/api/auth/session");
+      const session = await res.json();
+      if (!session.user) {
+        console.log("No user session found. Redirecting to /login");
+      } else {
+        console.log("User session found. Redirecting to /dashboard");
+      }
+    };
+
+    fetchSession();
+  }, []);
+
   return (
     <Box>
       <Typography variant="h5">Welcome to the Home Page</Typography>

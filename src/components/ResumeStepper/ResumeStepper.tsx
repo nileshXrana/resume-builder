@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import styles from './ResumeStepper.module.css';
 import FormControl from '@mui/material/FormControl';
 import Input from '@mui/material/Input';
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, useFieldArray, SubmitHandler, Controller, useWatch } from "react-hook-form";
 import { useDispatch, useSelector } from 'react-redux';
 import { setCurrentResume } from '@/redux/features/resumeSlice';
 import ResumePreview from '../ResumePreview/ResumePreview';
@@ -53,6 +53,7 @@ type Inputs = {
     eduEndDate: string;
 };
 
+
 const steps = ['Header', 'Summary', 'Experience', 'Projects', 'Skills', 'Education'];
 
 export default function ResumeStepper() {
@@ -60,6 +61,8 @@ export default function ResumeStepper() {
     const currentResume = useSelector((state: any) => state.resume.currentResume);
 
     const [activeStep, setActiveStep] = React.useState(0);
+
+    const [experience, setExperience] = React.useState(1);
 
     const {
         register,
@@ -78,10 +81,32 @@ export default function ResumeStepper() {
 
     const onSubmit: SubmitHandler<Inputs> = (data) => {
         const stepKey = `step${activeStep + 1}`;
-        dispatch(setCurrentResume({
-            ...currentResume,
-            [stepKey]: data
-        }));
+        // save multiple data in experience, projects and education steps
+        if (activeStep === 2) {
+            const experience = currentResume?.[stepKey] || [];
+            dispatch(setCurrentResume({
+                ...currentResume,
+                [stepKey]: [...experience, data]
+            }));
+        } else if (activeStep === 3) {
+            const projects = currentResume?.[stepKey] || [];
+            dispatch(setCurrentResume({
+                ...currentResume,
+                [stepKey]: [...projects, data]
+            }));
+        } else if (activeStep === 5) {
+            const education = currentResume?.[stepKey] || [];
+            dispatch(setCurrentResume({
+                ...currentResume,
+                [stepKey]: [...education, data]
+            }));
+        }
+        else {
+            dispatch(setCurrentResume({
+                ...currentResume,
+                [stepKey]: data
+            }));
+        }
     };
 
     const handleStep = (step: number) => () => {
@@ -151,12 +176,13 @@ export default function ResumeStepper() {
                             {activeStep === 1 && (
                                 <FormControl className={styles.formGroup}>
                                     <Typography variant="body2" className={styles.formLabel}>Summary</Typography>
-                                    <Input {...register('summary', { required: true })} type="text" placeholder="A summary of your professional experience and skills" error={!!errors.summary} />
+                                    <Input multiline {...register('summary', { required: true })} type="text" placeholder="A summary of your professional experience and skills" error={!!errors.summary} />
                                 </FormControl>
                             )}
 
                             {activeStep === 2 && (
                                 <>
+
                                     <FormControl className={styles.formGroup}>
                                         <Typography variant="body2" className={styles.formLabel}>Job Title</Typography>
                                         <Input {...register('jobTitle', { required: true })} type="text" placeholder="Software Engineer" error={!!errors.jobTitle} />
@@ -181,10 +207,13 @@ export default function ResumeStepper() {
                                         <Typography variant="body2" className={styles.formLabel}>End Date</Typography>
                                         <Input {...register('expEndDate', { required: true })} type="text" placeholder="MM/YYYY or Present" error={!!errors.expEndDate} />
                                     </FormControl>
+
                                 </>
                             )}
 
+
                             {activeStep === 3 && (
+
                                 <>
                                     <FormControl className={styles.formGroup}>
                                         <Typography variant="body2" className={styles.formLabel}>Project Title</Typography>
@@ -199,6 +228,7 @@ export default function ResumeStepper() {
                                         <Input {...register('projectLink')} type="text" placeholder="https://github.com/username/project" />
                                     </FormControl>
                                 </>
+
                             )}
 
                             {activeStep === 4 && (

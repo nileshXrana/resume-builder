@@ -13,15 +13,13 @@ export interface ResumeState {
     currentResume: any;
 }
 
-const initialState: ResumeState = {
-    resumes: [],
-    currentResume: null,
-};
-
 // slice
 export const resumeSlice = createSlice({
     name: 'resume',
-    initialState,
+    initialState: {
+        resumes: [] as Resume[],
+        currentResume: null,
+    },
     reducers: {
         addResumes: (state, action: PayloadAction<Resume>) => {
             state.resumes.push(action.payload);

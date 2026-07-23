@@ -27,20 +27,18 @@ export default function Dashboard() {
   const currentUser = useSelector((state: any) => state.user.currentUser);
   const resumes = useSelector((state: any) => state.resume.resumes);
 
-  useEffect(() => {
-    if (!currentUser) {
-      router.push("/signin");
-    }
-  }, [currentUser, router]);
-
   const userResumes = resumes.filter((resume: Resume) => resume.ownerEmail === currentUser?.email);
+
+  const openResume = () => {
+      
+  }
 
   const handleLogout = () => {
     signOut();
   };
 
   if (!currentUser) {
-    return null; // Avoid flicker before redirecting
+    return null;
   }
 
   return (
@@ -75,7 +73,7 @@ export default function Dashboard() {
         <Box className={styles.docGrid}>
           {userResumes.map((doc: Resume) => (
             <Card key={doc.docId} className={styles.docCard} variant="outlined">
-              <CardActionArea onClick={() => router.push(`/editor/${doc.docId}`)}>
+              <CardActionArea onClick={openResume}>
                 <Box className={styles.docThumbnail}>
                   <Skeleton variant="text" width="40%" height={20} animation={false} sx={{ bgcolor: 'rgba(0,0,0,0.06)' }} />
                   <Skeleton variant="rectangular" width="75%" height={8} animation={false} sx={{ bgcolor: 'rgba(0,0,0,0.04)', borderRadius: '4px' }} />

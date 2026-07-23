@@ -9,7 +9,7 @@ export default function ResumePreview() {
     const currentResume = useSelector((state: any) => state.resume.currentResume);
 
     const template = currentResume?.template || 'template1';
-    
+
     // Choose theme color based on template
     let themeColor = '#1a73e8'; // Template 1: Slate Blue
     if (template === 'template2') {
@@ -21,11 +21,11 @@ export default function ResumePreview() {
     const { step1, step2, step3, step4, step5, step6 } = currentResume || {};
 
     return (
-        <Box 
-            className={styles.resumeContainer} 
-            sx={{ 
-                bgcolor: '#fff', 
-                borderRadius: '4px', 
+        <Box
+            className={styles.resumeContainer}
+            sx={{
+                bgcolor: '#fff',
+                borderRadius: '4px',
                 overflow: 'hidden',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
                 p: 0,
@@ -65,58 +65,63 @@ export default function ResumePreview() {
                 )}
 
                 {/* Experience Section */}
-                {step3 && (step3.jobTitle || step3.employer) && (
-                    <Box sx={{ mb: 3 }}>
-                        <Typography variant="h6" sx={{ color: themeColor, fontWeight: 600, mb: 1 }}>
-                            Work Experience
-                        </Typography>
-                        <Divider sx={{ mb: 1.5, borderColor: themeColor, borderBottomWidth: 2 }} />
-                        <Box sx={{ mb: 1.5 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', mb: 0.5 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                                    {step3.jobTitle}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                                    {step3.expStartDate} - {step3.expEndDate}
-                                </Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', mb: 0.5 }}>
-                                <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                                    {step3.employer}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                    {step3.expCity && `${step3.expCity}, `}{step3.expCountry}
-                                </Typography>
+                <Typography variant="h6" sx={{ color: themeColor, fontWeight: 600, mb: 1 }}>
+                    Work Experience
+                </Typography>
+                <Divider sx={{ mb: 1.5, borderColor: themeColor, borderBottomWidth: 2 }} />
+
+                {step3 && Array.isArray(step3) && (
+                    step3.map((exp, index) => (
+                        <Box key={index} sx={{ mb: 3 }}>
+                            <Box sx={{ mb: 1.5 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', mb: 0.5 }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                        {exp.jobTitle}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                                        {exp.expStartDate} - {exp.expEndDate}
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', mb: 0.5 }}>
+                                    <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+                                        {exp.employer}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        {exp.expCity && `${exp.expCity}, `}{exp.expCountry}
+                                    </Typography>
+                                </Box>
                             </Box>
                         </Box>
-                    </Box>
+                    ))
                 )}
 
                 {/* Projects Section */}
-                {step4 && step4.projectTitle && (
-                    <Box sx={{ mb: 3 }}>
-                        <Typography variant="h6" sx={{ color: themeColor, fontWeight: 600, mb: 1 }}>
-                            Key Projects
-                        </Typography>
-                        <Divider sx={{ mb: 1.5, borderColor: themeColor, borderBottomWidth: 2 }} />
-                        <Box sx={{ mb: 1.5 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', mb: 0.5 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                                    {step4.projectTitle}
-                                </Typography>
-                                {step4.projectLink && (
-                                    <Typography variant="caption">
-                                        <a href={step4.projectLink} target="_blank" rel="noreferrer" style={{ color: themeColor, textDecoration: 'none' }}>
-                                            Link 🔗
-                                        </a>
+                <Typography variant="h6" sx={{ color: themeColor, fontWeight: 600, mb: 1 }}>
+                    Key Projects
+                </Typography>
+                <Divider sx={{ mb: 1.5, borderColor: themeColor, borderBottomWidth: 2 }} />
+                {step4 && Array.isArray(step4) && (
+                    step4.map((project, index) => (
+                        <Box sx={{ mb: 3 }}>
+                            <Box sx={{ mb: 1.5 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', mb: 0.5 }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                        {project.projectTitle}
                                     </Typography>
-                                )}
+                                    {project.projectLink && (
+                                        <Typography variant="caption">
+                                            <a href={project.projectLink} target="_blank" rel="noreferrer" style={{ color: themeColor, textDecoration: 'none' }}>
+                                                Link 🔗
+                                            </a>
+                                        </Typography>
+                                    )}
+                                </Box>
+                                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
+                                    {project.projectDescription}
+                                </Typography>
                             </Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
-                                {step4.projectDescription}
-                            </Typography>
                         </Box>
-                    </Box>
+                    ))
                 )}
 
                 {/* Skills Section */}
@@ -131,14 +136,14 @@ export default function ResumePreview() {
                                 const trimmed = skill.trim();
                                 if (!trimmed) return null;
                                 return (
-                                    <Box 
-                                        key={idx} 
-                                        sx={{ 
-                                            bgcolor: 'rgba(0, 0, 0, 0.05)', 
-                                            color: '#333', 
-                                            px: 1.5, 
-                                            py: 0.5, 
-                                            borderRadius: '16px', 
+                                    <Box
+                                        key={idx}
+                                        sx={{
+                                            bgcolor: 'rgba(0, 0, 0, 0.05)',
+                                            color: '#333',
+                                            px: 1.5,
+                                            py: 0.5,
+                                            borderRadius: '16px',
                                             fontSize: '0.75rem',
                                             fontWeight: 500
                                         }}
@@ -152,31 +157,33 @@ export default function ResumePreview() {
                 )}
 
                 {/* Education Section */}
-                {step6 && (step6.schoolName || step6.degree) && (
-                    <Box sx={{ mb: 3 }}>
-                        <Typography variant="h6" sx={{ color: themeColor, fontWeight: 600, mb: 1 }}>
-                            Education
-                        </Typography>
-                        <Divider sx={{ mb: 1.5, borderColor: themeColor, borderBottomWidth: 2 }} />
-                        <Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', mb: 0.5 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                                    {step6.degree}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                                    {step6.eduStartDate} - {step6.eduEndDate}
-                                </Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                                <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                                    {step6.schoolName}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                    {step6.eduCity && `${step6.eduCity}, `}{step6.eduCountry}
-                                </Typography>
+                <Typography variant="h6" sx={{ color: themeColor, fontWeight: 600, mb: 1 }}>
+                    Education
+                </Typography>
+                <Divider sx={{ mb: 1.5, borderColor: themeColor, borderBottomWidth: 2 }} />
+                {step6 && Array.isArray(step6) && (
+                    step6.map((edu, index) => (
+                        <Box key={index} sx={{ mb: 3 }}>
+                            <Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', mb: 0.5 }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                        {edu.degree}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                                        {edu.eduStartDate} - {edu.eduEndDate}
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                                    <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+                                        {edu.schoolName}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        {edu.eduCity && `${edu.eduCity}, `}{edu.eduCountry}
+                                    </Typography>
+                                </Box>
                             </Box>
                         </Box>
-                    </Box>
+                    ))
                 )}
             </Box>
         </Box>

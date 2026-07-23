@@ -264,7 +264,7 @@ export default function SignIn() {
             Continue with Google
           </Button>
 
-          
+
         </Paper>
       </Container>
     </Box>
