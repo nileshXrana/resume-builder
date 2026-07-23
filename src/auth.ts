@@ -16,10 +16,9 @@ export const authOptions: NextAuthOptions = {
                 password: { label: 'Password', type: 'password' },
             },
             async authorize(credentials, req) {
-                // Add logic to verify credentials here
                 if (!credentials) return null
-                console.log("use logged in with email:", credentials.email)
-                return { id: "1", name: 'User', email: "user@example.com" }
+                console.log("user logged in with email:", credentials.email)
+                return { id: credentials.email, name: credentials.email.split('@')[0], email: credentials.email }
             },
         }),
         // ... other providers

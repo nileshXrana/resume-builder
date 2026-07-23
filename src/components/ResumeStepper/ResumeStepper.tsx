@@ -7,15 +7,14 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import styles from './ResumeStepper.module.css';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Input from '@mui/material/Input';
-import { useForm, SubmitHandler } from "react-hook-form"
+import { useForm, SubmitHandler } from "react-hook-form";
 import { useDispatch, useSelector } from 'react-redux';
-import { store } from '@/redux/store';
 import { setCurrentResume } from '@/redux/features/resumeSlice';
 import ResumePreview from '../ResumePreview/ResumePreview';
 
 type Inputs = {
+    // Header (Step 0)
     firstName: string;
     surname: string;
     city: string;
@@ -25,115 +24,75 @@ type Inputs = {
     email: string;
     linkedin: string;
     github: string;
+
+    // Summary (Step 1)
+    summary: string;
+
+    // Experience (Step 2)
+    jobTitle: string;
+    employer: string;
+    expCity: string;
+    expCountry: string;
+    expStartDate: string;
+    expEndDate: string;
+
+    // Projects (Step 3)
+    projectTitle: string;
+    projectDescription: string;
+    projectLink: string;
+
+    // Skills (Step 4)
+    skills: string;
+
+    // Education (Step 5)
+    schoolName: string;
+    degree: string;
+    eduCity: string;
+    eduCountry: string;
+    eduStartDate: string;
+    eduEndDate: string;
 };
 
 const steps = ['Header', 'Summary', 'Experience', 'Projects', 'Skills', 'Education'];
 
 export default function ResumeStepper() {
-
     const dispatch = useDispatch();
     const currentResume = useSelector((state: any) => state.resume.currentResume);
+
+    const [activeStep, setActiveStep] = React.useState(0);
 
     const {
         register,
         handleSubmit,
-        watch,
         formState: { errors },
-    } = useForm<Inputs>()
-
-
-
-    const [activeStep, setActiveStep] = React.useState(0);
-    const [completed, setCompleted] = React.useState<{
-        [k: number]: boolean;
-    }>({});
-
+    } = useForm<Inputs>({
+        values: currentResume ? {
+            ...currentResume.step1,
+            ...currentResume.step2,
+            ...currentResume.step3,
+            ...currentResume.step4,
+            ...currentResume.step5,
+            ...currentResume.step6,
+        } : undefined
+    });
 
     const onSubmit: SubmitHandler<Inputs> = (data) => {
-        // save resume data to redux store for that step
+        const stepKey = `step${activeStep + 1}`;
         dispatch(setCurrentResume({
             ...currentResume,
-            activeStep: data
+            [stepKey]: data
         }));
-        console.log(currentResume.activeStep);
-    }
-
-    const totalSteps = steps.length;
-    const completedSteps = Object.keys(completed).length;
-    const isLastStep = activeStep === totalSteps - 1;
-    const allStepsCompleted = completedSteps === totalSteps;
-
-    const handleNext = () => {
-        const newActiveStep =
-            isLastStep && !allStepsCompleted
-                ? // It's the last step, but not all steps have been completed,
-                // find the first step that has not been completed
-                steps.findIndex((_step, i) => !(i in completed))
-                : activeStep + 1;
-        setActiveStep(newActiveStep);
-    };
-
-    const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
 
     const handleStep = (step: number) => () => {
         setActiveStep(step);
     };
 
-    const handleComplete = () => {
-        setCompleted({
-            ...completed,
-            [activeStep]: true,
-        });
-        handleNext();
-    };
-
-    const handleReset = () => {
-        setActiveStep(0);
-        setCompleted({});
-    };
-
-    const resetButtonRef = React.useRef<HTMLButtonElement>(null);
-    const nextButtonRef = React.useRef<HTMLButtonElement>(null);
-    const previousActiveStepRef = React.useRef(activeStep);
-    const previousCompletedRef = React.useRef(completed);
-
-    // Manage focus when the completed steps change.
-    React.useEffect(() => {
-        const previousCompleted = previousCompletedRef.current;
-        previousCompletedRef.current = completed;
-
-        if (allStepsCompleted) {
-            // If the user has completed all steps and hits "Finish", focus the "Reset" button.
-            resetButtonRef.current!.focus();
-            return;
-        }
-
-        if (
-            Object.keys(completed).length === 0 &&
-            Object.keys(previousCompleted).length !== 0
-        ) {
-            // If the user has completed all steps and hits "Reset", focus the "Next" button.
-            nextButtonRef.current!.focus();
-        }
-    }, [completed, allStepsCompleted]);
-
-    // Manage focus when the active step changes.
-    React.useEffect(() => {
-        if (activeStep === 0 && previousActiveStepRef.current === 1) {
-            // If the user navigated to first step via "Back" button, focus the "Next" button.
-            nextButtonRef.current!.focus();
-        }
-
-        previousActiveStepRef.current = activeStep;
-    }, [activeStep]);
-
     return (
         <Box sx={{ width: '100%' }}>
             <Stepper nonLinear activeStep={activeStep}>
                 {steps.map((label, index) => (
-                    <Step key={label} completed={completed[index]}>
+                    <Step key={label}>
                         <StepButton
                             aria-controls="stepper-content"
                             color="inherit"
@@ -145,272 +104,148 @@ export default function ResumeStepper() {
                 ))}
             </Stepper>
             <Box id="stepper-content" className={styles.stepperContent}>
-                {allStepsCompleted ? (
-                    <React.Fragment>
-                        <Typography sx={{ mt: 2, mb: 1 }}>
-                            All steps completed - you&apos;re finished
-                        </Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                            <Box sx={{ flex: '1 1 auto' }} />
-                            <Button onClick={handleReset} ref={resetButtonRef}>
-                                Reset
-                            </Button>
-                        </Box>
-                    </React.Fragment>
-                ) : (
-                    <React.Fragment>
-
-                        <Box className={styles.formandpreviewContainer}>
-
+                <Box className={styles.formandpreviewContainer}>
+                    <Box className={styles.formContainer}>
+                        <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
                             {activeStep === 0 && (
-                                <Box className={styles.formContainer}>
-                                    <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                First Name
-                                            </Typography>
-                                            <Input {...register('firstName', { required: true })} type="text" id="firstName" name="firstName" placeholder="Nilesh"
-                                                aria-invalid={errors.firstName ? "true" : "false"} />
-                                            {errors.firstName?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    First name is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                Surname
-                                            </Typography>
-                                            <Input {...register('surname', { required: true })} type="text" id="surname" name="surname" placeholder="Rana"
-                                                aria-invalid={errors.surname ? "true" : "false"} />
-                                            {errors.surname?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    Surname is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                City
-                                            </Typography>
-                                            <Input {...register('city', { required: true })} type="text" id="city" name="city" placeholder="Dehradun"
-                                                aria-invalid={errors.city ? "true" : "false"} />
-                                            {errors.city?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    City is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                Country
-                                            </Typography>
-                                            <Input {...register('country', { required: true })} type="text" id="country" name="country" placeholder="India"
-                                                aria-invalid={errors.country ? "true" : "false"} />
-                                            {errors.country?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    Country is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                Pincode
-                                            </Typography>
-                                            <Input {...register('pincode', { required: true })} type="text" id="pincode" name="pincode" placeholder="248003"
-                                                aria-invalid={errors.pincode ? "true" : "false"} />
-                                            {errors.pincode?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    Pincode is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                Phone
-                                            </Typography>
-                                            <Input {...register('phone', { required: true })} type="text" id="phone" name="phone" placeholder="+91 6383728372"
-                                                aria-invalid={errors.phone ? "true" : "false"} />
-                                            {errors.phone?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    Phone is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                Email
-                                            </Typography>
-                                            <Input {...register('email', { required: true })} type="email" id="email" name="email" placeholder="nilesh@email.com"
-                                                aria-invalid={errors.email ? "true" : "false"} />
-                                            {errors.email?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    Email is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                LinkedIn
-                                            </Typography>
-                                            <Input {...register('linkedin', { required: false })} type="text" id="linkedin" name="linkedin" placeholder="LinkedIn profile URL"
-                                                aria-invalid={errors.linkedin ? "true" : "false"} />
-                                            {errors.linkedin?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    LinkedIn is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                GitHub
-                                            </Typography>
-                                            <Input {...register('github', { required: false })} type="text" id="github" name="github" placeholder="GitHub profile URL" />
-                                        </FormControl>
-
-                                        <Button type="submit" variant="contained" color="primary" className={styles.submitButton}>
-                                            Save
-                                        </Button>
-                                    </form>
-                                </Box>
-
+                                <>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>First Name</Typography>
+                                        <Input {...register('firstName', { required: true })} type="text" placeholder="Nilesh" error={!!errors.firstName} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Surname</Typography>
+                                        <Input {...register('surname', { required: true })} type="text" placeholder="Rana" error={!!errors.surname} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>City</Typography>
+                                        <Input {...register('city', { required: true })} type="text" placeholder="Dehradun" error={!!errors.city} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Country</Typography>
+                                        <Input {...register('country', { required: true })} type="text" placeholder="India" error={!!errors.country} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Pincode</Typography>
+                                        <Input {...register('pincode', { required: true })} type="text" placeholder="248003" error={!!errors.pincode} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Phone</Typography>
+                                        <Input {...register('phone', { required: true })} type="text" placeholder="+91 6383728372" error={!!errors.phone} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Email</Typography>
+                                        <Input {...register('email', { required: true })} type="email" placeholder="nilesh@email.com" error={!!errors.email} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>LinkedIn</Typography>
+                                        <Input {...register('linkedin')} type="text" placeholder="LinkedIn profile URL" />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>GitHub</Typography>
+                                        <Input {...register('github')} type="text" placeholder="GitHub profile URL" />
+                                    </FormControl>
+                                </>
                             )}
 
                             {activeStep === 1 && (
-                                <Box className={styles.formContainer}>
-                                    <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                Summary
-                                            </Typography>
-                                            <Input {...register('firstName', { required: true })} type="text" id="firstName" name="firstName" placeholder="a summary of your professional experience and skills"
-                                                aria-invalid={errors.firstName ? "true" : "false"} />
-                                            {errors.firstName?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    First name is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-
-
-                                        <Button type="submit" variant="contained" color="primary" className={styles.submitButton}>
-                                            Save
-                                        </Button>
-                                    </form>
-                                </Box>
+                                <FormControl className={styles.formGroup}>
+                                    <Typography variant="body2" className={styles.formLabel}>Summary</Typography>
+                                    <Input {...register('summary', { required: true })} type="text" placeholder="A summary of your professional experience and skills" error={!!errors.summary} />
+                                </FormControl>
                             )}
 
                             {activeStep === 2 && (
-                                <Box className={styles.formContainer}>
-                                    <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                Job Title
-                                            </Typography>
-                                            <Input {...register('firstName', { required: true })} type="text" id="firstName" name="firstName" placeholder="job title here"
-                                                aria-invalid={errors.firstName ? "true" : "false"} />
-                                            {errors.firstName?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    First name is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                Employer
-                                            </Typography>
-                                            <Input {...register('surname', { required: true })} type="text" id="surname" name="surname" placeholder="employer name here"
-                                                aria-invalid={errors.surname ? "true" : "false"} />
-                                            {errors.surname?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    Surname is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                City
-                                            </Typography>
-                                            <Input {...register('city', { required: true })} type="text" id="city" name="city" placeholder="Dehradun"
-                                                aria-invalid={errors.city ? "true" : "false"} />
-                                            {errors.city?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    City is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                Country
-                                            </Typography>
-                                            <Input {...register('country', { required: true })} type="text" id="country" name="country" placeholder="India"
-                                                aria-invalid={errors.country ? "true" : "false"} />
-                                            {errors.country?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    Country is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-                                        <FormControl className={styles.formGroup}>
-                                            <Typography variant="body2" className={styles.formLabel}>
-                                                Start Date
-                                            </Typography>
-                                            <Input {...register('pincode', { required: true })} type="text" id="pincode" name="pincode" placeholder="02/05/2026"
-                                                aria-invalid={errors.pincode ? "true" : "false"} />
-                                            {errors.pincode?.type === "required" && (
-                                                <Typography className={styles.error} role="alert">
-                                                    Pincode is required
-                                                </Typography>
-                                            )}
-                                        </FormControl>
-
-
-                                        <Button type="submit" variant="contained" color="primary" className={styles.submitButton}>
-                                            Save
-                                        </Button>
-                                    </form>
-                                </Box>
-
+                                <>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Job Title</Typography>
+                                        <Input {...register('jobTitle', { required: true })} type="text" placeholder="Software Engineer" error={!!errors.jobTitle} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Employer</Typography>
+                                        <Input {...register('employer', { required: true })} type="text" placeholder="Google" error={!!errors.employer} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>City</Typography>
+                                        <Input {...register('expCity', { required: true })} type="text" placeholder="Dehradun" error={!!errors.expCity} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Country</Typography>
+                                        <Input {...register('expCountry', { required: true })} type="text" placeholder="India" error={!!errors.expCountry} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Start Date</Typography>
+                                        <Input {...register('expStartDate', { required: true })} type="text" placeholder="MM/YYYY" error={!!errors.expStartDate} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>End Date</Typography>
+                                        <Input {...register('expEndDate', { required: true })} type="text" placeholder="MM/YYYY or Present" error={!!errors.expEndDate} />
+                                    </FormControl>
+                                </>
                             )}
 
-                            {/* preview of your resume */}
-                            <Box className={styles.previewContainer}>
-                                <ResumePreview />
-                            </Box>
+                            {activeStep === 3 && (
+                                <>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Project Title</Typography>
+                                        <Input {...register('projectTitle', { required: true })} type="text" placeholder="Resume Builder" error={!!errors.projectTitle} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Description</Typography>
+                                        <Input {...register('projectDescription', { required: true })} type="text" placeholder="A web app built with Next.js and Redux" error={!!errors.projectDescription} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Project Link</Typography>
+                                        <Input {...register('projectLink')} type="text" placeholder="https://github.com/username/project" />
+                                    </FormControl>
+                                </>
+                            )}
 
-                        </Box>
+                            {activeStep === 4 && (
+                                <FormControl className={styles.formGroup}>
+                                    <Typography variant="body2" className={styles.formLabel}>Skills</Typography>
+                                    <Input {...register('skills', { required: true })} type="text" placeholder="React, Next.js, Redux, TypeScript" error={!!errors.skills} />
+                                </FormControl>
+                            )}
 
+                            {activeStep === 5 && (
+                                <>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>School Name</Typography>
+                                        <Input {...register('schoolName', { required: true })} type="text" placeholder="Uttarakhand Technical University" error={!!errors.schoolName} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Degree</Typography>
+                                        <Input {...register('degree', { required: true })} type="text" placeholder="B.Tech in Computer Science" error={!!errors.degree} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>City</Typography>
+                                        <Input {...register('eduCity', { required: true })} type="text" placeholder="Dehradun" error={!!errors.eduCity} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Country</Typography>
+                                        <Input {...register('eduCountry', { required: true })} type="text" placeholder="India" error={!!errors.eduCountry} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>Start Date</Typography>
+                                        <Input {...register('eduStartDate', { required: true })} type="text" placeholder="MM/YYYY" error={!!errors.eduStartDate} />
+                                    </FormControl>
+                                    <FormControl className={styles.formGroup}>
+                                        <Typography variant="body2" className={styles.formLabel}>End Date</Typography>
+                                        <Input {...register('eduEndDate', { required: true })} type="text" placeholder="MM/YYYY" error={!!errors.eduEndDate} />
+                                    </FormControl>
+                                </>
+                            )}
 
-
-
-                        <Box sx={{ display: 'flex', flexDirection: 'row', p: 2, mt: 2 }}>
-                            <Button
-                                color="inherit"
-                                disabled={activeStep === 0}
-                                onClick={handleBack}
-                                sx={{ mr: 1 }}
-                            >
-                                Prev
+                            <Button type="submit" variant="contained" color="primary" className={styles.submitButton}>
+                                Preview
                             </Button>
-                            <Box sx={{ flex: '1 1 auto' }} />
-                            <Button onClick={handleNext} sx={{ mr: 1 }} ref={nextButtonRef}>
-                                Next
-                            </Button>
-                            {activeStep !== steps.length &&
-                                (completed[activeStep] ? (
-                                    <Typography variant="caption" sx={{ display: 'inline-block' }}>
-                                        Step {activeStep + 1} already completed
-                                    </Typography>
-                                ) : (
-                                    <Button onClick={handleComplete}>
-                                        {completedSteps === totalSteps - 1 ? 'Finish' : 'Complete Step'}
-                                    </Button>
-                                ))}
-                        </Box>
-
-
-                    </React.Fragment>
-                )}
+                        </form>
+                    </Box>
+                    <Box className={styles.previewContainer}>
+                        <ResumePreview />
+                    </Box>
+                </Box>
             </Box>
         </Box>
     );

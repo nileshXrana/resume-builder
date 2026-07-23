@@ -2,46 +2,45 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardActionArea from "@mui/material/CardActionArea";
 import Skeleton from "@mui/material/Skeleton";
-import AddIcon from '@mui/icons-material/Add';
 import DescriptionIcon from '@mui/icons-material/Description';
 import styles from "./dashboard.module.css";
-import { signOut } from "next-auth/react";
 import TemplateDialog from "@/components/TemplateDialog/TemplateDialog";
 import ResumeDialog from "@/components/ResumeDialog/ResumeDialog";
-
-interface Doc {
-  docId: string;
-  ownerId: string;
-  title: string;
-  createdAt: number;
-}
+import { logoutUser } from "@/redux/features/userSlice";
+import { Resume } from "@/redux/features/resumeSlice";
+import { signOut } from "next-auth/react";
 
 export default function Dashboard() {
   const router = useRouter();
-  const [docs, setDocs] = useState<Doc[]>([]);
+  const dispatch = useDispatch();
   const [openResumeDialog, setOpenResumeDialog] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      signOut();
-      router.push("/");
-    } catch (error) {
-      console.error(error);
+  const currentUser = useSelector((state: any) => state.user.currentUser);
+  const resumes = useSelector((state: any) => state.resume.resumes);
+
+  useEffect(() => {
+    if (!currentUser) {
+      router.push("/signin");
     }
+  }, [currentUser, router]);
+
+  const userResumes = resumes.filter((resume: Resume) => resume.ownerEmail === currentUser?.email);
+
+  const handleLogout = () => {
+    signOut();
   };
 
-  const handleCreateResume = async () => {
-    // add new resume to docs
-
+  if (!currentUser) {
+    return null; // Avoid flicker before redirecting
   }
 
   return (
@@ -50,16 +49,19 @@ export default function Dashboard() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DescriptionIcon sx={{ color: '#1a73e8', fontSize: 32 }} />
           <Typography variant="h5" className={styles.title}>
-            Resume Builder
+            Resume Builder - {currentUser.email}
           </Typography>
         </Box>
-        <Box className={styles.headerActions}>
+        <Box className={styles.headerActions} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <TemplateDialog openResumeDialog={openResumeDialog} setOpenResumeDialog={setOpenResumeDialog} />
           <ResumeDialog open={openResumeDialog} setOpen={setOpenResumeDialog} />
+          <Button variant="outlined" color="error" onClick={handleLogout} size="small" sx={{ textTransform: 'none' }}>
+            Logout
+          </Button>
         </Box>
       </Box>
 
-      {docs.length === 0 ? (
+      {userResumes.length === 0 ? (
         <Box className={styles.emptyState}>
           <DescriptionIcon sx={{ fontSize: 80, color: '#dadce0', marginBottom: 2 }} />
           <Typography variant="h6" sx={{ fontWeight: 600, color: '#3c4043', marginBottom: 1 }}>
@@ -71,7 +73,7 @@ export default function Dashboard() {
         </Box>
       ) : (
         <Box className={styles.docGrid}>
-          {docs.map((doc) => (
+          {userResumes.map((doc: Resume) => (
             <Card key={doc.docId} className={styles.docCard} variant="outlined">
               <CardActionArea onClick={() => router.push(`/editor/${doc.docId}`)}>
                 <Box className={styles.docThumbnail}>

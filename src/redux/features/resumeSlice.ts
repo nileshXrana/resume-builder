@@ -1,17 +1,32 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+export interface Resume {
+    docId: string;
+    ownerEmail: string;
+    title: string;
+    createdAt: number;
+    data?: any;
+}
+
+export interface ResumeState {
+    resumes: Resume[];
+    currentResume: any;
+}
+
+const initialState: ResumeState = {
+    resumes: [],
+    currentResume: null,
+};
 
 // slice
 export const resumeSlice = createSlice({
     name: 'resume',
-    initialState: {
-        resumes: [],
-        currentResume: null,
-    },
+    initialState,
     reducers: {
-        addResumes: (state: any, action) => {
+        addResumes: (state, action: PayloadAction<Resume>) => {
             state.resumes.push(action.payload);
         },
-        setCurrentResume: (state: any, action) => {
+        setCurrentResume: (state, action: PayloadAction<any>) => {
             state.currentResume = action.payload;
         },
     },

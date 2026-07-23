@@ -1,7 +1,7 @@
 .resumeContainer {
-    width: 35rem;
-    height: 100%;
+    width: 100%;
     border: 1px solid #ccc;
+    box-sizing: border-box;
 }
 
 .previewContent {

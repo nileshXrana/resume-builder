@@ -1,4 +1,16 @@
 .stepperContainer {
     margin-top: 20px;
-    padding: 20px 180px;
+    padding: 20px 1rem;
+}
+
+@media (min-width: 960px) {
+    .stepperContainer {
+        padding: 20px 2rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .stepperContainer {
+        padding: 20px 6rem;
+    }
 }

@@ -7,7 +7,8 @@ import Typography from '@mui/material/Typography';
 import styles from './TemplateDialog.module.css'
 import Box from '@mui/material/Box';
 import Image from 'next/image';
-import ResumeDialog from '@/components/ResumeDialog/ResumeDialog';
+import { useDispatch } from 'react-redux';
+import { setCurrentResume } from '@/redux/features/resumeSlice';
 
 export interface SimpleDialogProps {
   open: boolean;
@@ -19,13 +20,22 @@ export interface SimpleDialogProps {
 
 function TemplateDialog(props: SimpleDialogProps) {
   const { onClose, selectedTemplate, open } = props;
+  const dispatch = useDispatch();
 
   const handleClose = () => {
     onClose(selectedTemplate);
   };
 
   const handleTemplate = (value: string) => {
-    console.log('Selected template:', props.selectedTemplate);
+    dispatch(setCurrentResume({
+      template: value,
+      step1: null,
+      step2: null,
+      step3: null,
+      step4: null,
+      step5: null,
+      step6: null,
+    }));
     props.setOpenResumeDialog(true);
 
     onClose(value);
